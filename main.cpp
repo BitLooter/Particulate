@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 #include <SDL/SDL.h>
 
 
@@ -14,11 +15,16 @@
  **********/
 typedef struct _Flake {
     int x;
-    int y;
-    int gravity;
+    double y;
+    double gravity;
     int wind;
     double flutter;
 } Flake;
+
+
+/* Globals
+ **********/
+SDL_Window* g_window;
 
 
 /* Functions
@@ -36,35 +42,40 @@ SDL_Renderer* init(void)
                               SCREEN_WIDTH, SCREEN_HEIGHT,
                               SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, 0);
+    g_window = window;
     return renderer;
 }
 
 void initFlakes(Flake* flakes)
 {
     Flake *flake;
+    
+    double timeToFall = 5.0;
+    
     for (int i = 0; i < NUM_FLAKES; i++)
     {
         flake = &flakes[i];
-        flake->x = rand() % 640; flake->y = rand() % 480;
-        flake->gravity = 3 + rand() % 3;
+        flake->x = rand() % 640;
+        flake->y = (double) rand() / RAND_MAX;
+        flake->gravity = 1.0 / (timeToFall * 1000);
         flake->wind = 1 + rand() % 3;
         flake->flutter = ((double) rand() / RAND_MAX) * 2 * PI;
     }
 }
 
-void updateFlakes(Flake* flakes)
+void updateFlakes(Flake* flakes, int elapsed)
 {
     Flake* flake;
     for (int i = 0; i < NUM_FLAKES; i++)
     {
         flake = &flakes[i];
-        flake->x += flake->wind;
-        if (flake->x > SCREEN_WIDTH)
-            flake->x = 0;
-        flake->y += flake->gravity;
-        if (flake->y > SCREEN_HEIGHT)
-            flake->y = 0;
-        flake->flutter += 0.1;
+//        flake->x += flake->wind;
+  //      if (flake->x > SCREEN_WIDTH)
+    //        flake->x = 0;
+        flake->y += flake->gravity * elapsed;
+        if (flake->y >= 1.0)
+            flake->y = 0.0;
+      //  flake->flutter += 0.1;
     }
 }
 
@@ -72,6 +83,7 @@ void render(SDL_Renderer* renderer, Flake* flakes)
 {
     Flake* flake;
     int x;
+    int y;
     
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
@@ -80,7 +92,8 @@ void render(SDL_Renderer* renderer, Flake* flakes)
     {
         flake = &flakes[i];
         x = flake->x + cos(flake->flutter) * 10;
-        SDL_RenderDrawPoint(renderer, x, flake->y);
+        y = SCREEN_HEIGHT * flake->y;
+        SDL_RenderDrawPoint(renderer, x, y);
     }
     SDL_RenderPresent(renderer);
 }
@@ -92,6 +105,9 @@ int main ( int argc, char** argv )
     int doQuit = false;
     unsigned int lastFrameTick;
     unsigned int currentTick;
+    int lastFps = 0;
+    int framesThisSecond = 0;
+    char windowTitle[100];      // WARNING - buffer overrun potential, check this at some point
     
     // Initialize code and get the renderer
     renderer = init();
@@ -116,11 +132,17 @@ int main ( int argc, char** argv )
         
         // Currently capped at 50fps. Move to a framerate-independate design later
         currentTick = SDL_GetTicks();
-        if (currentTick - lastFrameTick > 20)
+        updateFlakes(flakes, currentTick - lastFrameTick);
+        render(renderer, flakes);
+        framesThisSecond++;
+        lastFrameTick = currentTick;
+        
+        if (currentTick - lastFps > 1000)
         {
-            lastFrameTick = currentTick;
-            updateFlakes(flakes);
-            render(renderer, flakes);
+            lastFps = currentTick;
+            sprintf(windowTitle, "Snow particles demo - %dFPS", framesThisSecond);
+            SDL_SetWindowTitle(g_window, windowTitle);
+            framesThisSecond = 0;
         }
     }
     
