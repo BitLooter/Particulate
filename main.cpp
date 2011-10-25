@@ -8,6 +8,8 @@
 #define NUM_FLAKES 300
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
+#define VIEWPORT_WIDTH (double)SCREEN_WIDTH / SCREEN_HEIGHT
+#define VIEWPORT_HEIGHT 1.0
 #define PI 3.14159265358979
 
 
@@ -52,9 +54,9 @@ void initFlakes(Flake* flakes)
     for (int i = 0; i < NUM_FLAKES; i++)
     {
         flake = &flakes[i];
-        flake->xOffset = (double) rand() / RAND_MAX;
+        flake->xOffset = ((double) rand() / RAND_MAX) * VIEWPORT_WIDTH;
         flake->yOffset = (double) rand() / RAND_MAX;
-        flake->gravity = 1.0 / (timeToFall * 1000);
+        flake->gravity = VIEWPORT_HEIGHT / (timeToFall * 1000);
         flake->wind = flake->gravity * windRatio;
         flake->flutterRate = (2 * PI) / (timeToFlutter * 1000);
         flake->flutterOffset = (2*PI) * ((double) rand() / RAND_MAX);
@@ -75,8 +77,11 @@ void render(SDL_Renderer* renderer, Flake* flakes, unsigned int elapsed) {
         flake = &flakes[i];
         
         flutter = cos(flake->flutterOffset + (flake->flutterRate * elapsed)) * 0.05;
-        x = fmod(flake->xOffset + (flake->wind * elapsed) + flutter, 1.0) * SCREEN_WIDTH;
-        y = fmod(flake->yOffset + (flake->gravity * elapsed), 1.0) * SCREEN_HEIGHT;
+        // SCREEN_HEIGHT is not a typo. VIEWPORT_WIDTH * SCREEN_HEIGHT == SCREEN_WIDTH.
+        // Otherwise, we would need to divide the first part by VIEWPORT_WIDTH before
+        // correcting to screen coordinates, adding an unnecessary operation.
+        x = fmod(flake->xOffset + (flake->wind * elapsed) + flutter, VIEWPORT_WIDTH) * SCREEN_HEIGHT;
+        y = fmod(flake->yOffset + (flake->gravity * elapsed), VIEWPORT_HEIGHT) * SCREEN_HEIGHT;
         SDL_RenderDrawPoint(renderer, x, y);
     }
     SDL_RenderPresent(renderer);
