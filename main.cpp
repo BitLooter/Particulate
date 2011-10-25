@@ -22,6 +22,7 @@ typedef struct _Flake {
     double wind;            // Like gravity, but for horizontal movement. May be negative.
     double flutterRate;     // Rate at which the flake oscillates
     double flutterOffset;   // Each flake's flutter starts at a different point else it looks like a damn snow disco
+    double flutterRad;      // Amount the flake drifts to each side (flutter radius)
 } Flake;
 
 
@@ -49,7 +50,8 @@ void initFlakes(Flake* flakes)
     
     double timeToFall = 5.0;
     double windRatio = 0.2;
-    double timeToFlutter = 2.0;
+    double flutterAmount = 0.7;
+    double flutterMag = 0.05;
     
     for (int i = 0; i < NUM_FLAKES; i++)
     {
@@ -58,8 +60,9 @@ void initFlakes(Flake* flakes)
         flake->yOffset = (double) rand() / RAND_MAX;
         flake->gravity = VIEWPORT_HEIGHT / (timeToFall * 1000);
         flake->wind = flake->gravity * windRatio;
-        flake->flutterRate = (2 * PI) / (timeToFlutter * 1000);
+        flake->flutterRate = (2*PI) / (1000/ flutterAmount);
         flake->flutterOffset = (2*PI) * ((double) rand() / RAND_MAX);
+        flake->flutterRad = flutterMag;
     }
 }
 
@@ -76,7 +79,7 @@ void render(SDL_Renderer* renderer, Flake* flakes, unsigned int elapsed) {
     {
         flake = &flakes[i];
         
-        flutter = cos(flake->flutterOffset + (flake->flutterRate * elapsed)) * 0.05;
+        flutter = cos(flake->flutterOffset + (flake->flutterRate * elapsed)) * flake->flutterRad;
         // SCREEN_HEIGHT is not a typo. VIEWPORT_WIDTH * SCREEN_HEIGHT == SCREEN_WIDTH.
         // Otherwise, we would need to divide the first part by VIEWPORT_WIDTH before
         // correcting to screen coordinates, adding an unnecessary operation.
@@ -125,6 +128,7 @@ int main (int argc, char** argv)
         if (currentTick - lastFps > 1000)
         {
             lastFps = currentTick;
+            // If you edit this line, make sure windowTitle has enough space
             sprintf(windowTitle, "Snow particles demo - %dFPS", framesThisSecond);
             SDL_SetWindowTitle(window, windowTitle);
             framesThisSecond = 0;
