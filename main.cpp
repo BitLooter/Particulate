@@ -48,19 +48,31 @@ void initFlakes(Flake* flakes)
 {
     Flake *flake;
     
-    double timeToFall = 5.0;
-    double windRatio = 0.2;
-    double flutterAmount = 0.7;
-    double flutterMag = 0.05;
+    double minTimeToFall = 4.5;
+    double maxTimeToFall = 5.5;
+    double minWindRatio = 0.1;
+    double maxWindRatio = 0.3;
+    double minFlutterAmount = 0.3;
+    double maxFlutterAmount = 0.5;
+    double minFlutterMag = 0.02;
+    double maxFlutterMag = 0.02;
+    double timeToFall;
+    double windRatio;
+    double flutterAmount;
+    double flutterMag;
     
     for (int i = 0; i < NUM_FLAKES; i++)
     {
+        timeToFall = minTimeToFall + (((double) rand() / RAND_MAX) * (maxTimeToFall - minTimeToFall));
+        windRatio = minWindRatio + (((double) rand() / RAND_MAX) * (maxWindRatio - minWindRatio));
+        flutterAmount = minFlutterAmount + (((double) rand() / RAND_MAX) * (maxFlutterAmount - minFlutterAmount));
+        flutterMag = minFlutterMag + (((double) rand() / RAND_MAX) * (maxFlutterMag - minFlutterMag));
         flake = &flakes[i];
         flake->xOffset = ((double) rand() / RAND_MAX) * VIEWPORT_WIDTH;
         flake->yOffset = (double) rand() / RAND_MAX;
-        flake->gravity = VIEWPORT_HEIGHT / (timeToFall * 1000);
-        flake->wind = flake->gravity * windRatio;
-        flake->flutterRate = (2*PI) / (1000/ flutterAmount);
+        flake->gravity = (VIEWPORT_HEIGHT / (timeToFall * 1000));
+        flake->wind = (flake->gravity * windRatio);
+        flake->flutterRate = ((2*PI) / (1000/ flutterAmount));
         flake->flutterOffset = (2*PI) * ((double) rand() / RAND_MAX);
         flake->flutterRad = flutterMag;
     }
