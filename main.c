@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include <SDL/SDL.h>
 
@@ -23,6 +24,7 @@ typedef struct _Flake {
     double flutterRate;     // Rate at which the flake oscillates
     double flutterOffset;   // Each flake's flutter starts at a different point else it looks like a damn snow disco
     double flutterRad;      // Amount the flake drifts to each side (flutter radius)
+    int    shade;           // Color of the snowflake - use same value for all three colors
 } Flake;
 
 
@@ -44,10 +46,8 @@ int init(SDL_Window** wind, SDL_Renderer** rend)
     *rend = SDL_CreateRenderer(*wind, -1, 0);
 }
 
-void initFlakes(Flake* flakes)
+Flake* initFlakes()
 {
-    Flake *flake;
-    
     double minTimeToFall = 4.5;
     double maxTimeToFall = 5.5;
     double minWindRatio = 0.1;
@@ -60,14 +60,18 @@ void initFlakes(Flake* flakes)
     double windRatio;
     double flutterAmount;
     double flutterMag;
+    Flake* flakes;
+    int i;
+    Flake *flake;
     
-    for (int i = 0; i < NUM_FLAKES; i++)
+    flakes = calloc(NUM_FLAKES, sizeof(Flake));
+    
+    for (i = 0, flake=flakes; i < NUM_FLAKES; i++, flake++)
     {
         timeToFall = minTimeToFall + (((double) rand() / RAND_MAX) * (maxTimeToFall - minTimeToFall));
         windRatio = minWindRatio + (((double) rand() / RAND_MAX) * (maxWindRatio - minWindRatio));
         flutterAmount = minFlutterAmount + (((double) rand() / RAND_MAX) * (maxFlutterAmount - minFlutterAmount));
         flutterMag = minFlutterMag + (((double) rand() / RAND_MAX) * (maxFlutterMag - minFlutterMag));
-        flake = &flakes[i];
         flake->xOffset = ((double) rand() / RAND_MAX) * VIEWPORT_WIDTH;
         flake->yOffset = (double) rand() / RAND_MAX;
         flake->gravity = (VIEWPORT_HEIGHT / (timeToFall * 1000));
@@ -75,7 +79,10 @@ void initFlakes(Flake* flakes)
         flake->flutterRate = ((2*PI) / (1000/ flutterAmount));
         flake->flutterOffset = (2*PI) * ((double) rand() / RAND_MAX);
         flake->flutterRad = flutterMag;
+        flake->shade = (rand() % 80) + 175;
     }
+    
+    return flakes;
 }
 
 void render(SDL_Renderer* renderer, Flake* flakes, unsigned int elapsed) {
@@ -86,7 +93,6 @@ void render(SDL_Renderer* renderer, Flake* flakes, unsigned int elapsed) {
     
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     for (int i = 0; i < NUM_FLAKES; i++)
     {
         flake = &flakes[i];
@@ -97,6 +103,7 @@ void render(SDL_Renderer* renderer, Flake* flakes, unsigned int elapsed) {
         // correcting to screen coordinates, adding an unnecessary operation.
         x = fmod(flake->xOffset + (flake->wind * elapsed) + flutter, VIEWPORT_WIDTH) * SCREEN_HEIGHT;
         y = fmod(flake->yOffset + (flake->gravity * elapsed), VIEWPORT_HEIGHT) * SCREEN_HEIGHT;
+        SDL_SetRenderDrawColor(renderer, flake->shade, flake->shade, flake->shade, SDL_ALPHA_OPAQUE);
         SDL_RenderDrawPoint(renderer, x, y);
     }
     SDL_RenderPresent(renderer);
@@ -112,12 +119,12 @@ int main (int argc, char** argv)
     int lastFps = 0;
     int framesThisSecond = 0;
     char windowTitle[100];      // WARNING - buffer overrun potential, check this at some point
+    Flake* flakes;
     
     // Initialize code and get the renderer
     init(&window, &renderer);
     
-    Flake flakes[NUM_FLAKES];
-    initFlakes(flakes);
+    flakes = initFlakes();
     
     // Main loop
     while (doQuit == false)
