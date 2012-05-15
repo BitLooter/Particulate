@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 
 /* Constants
