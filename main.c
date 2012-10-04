@@ -43,16 +43,16 @@ typedef struct _Flake {
 
 /* Functions
  ************/
-int init(SDL_Window** wind, SDL_Renderer** rend)
+int init(SDL_Window** window, SDL_Renderer** rend)
 {
     //TODO: check for errors
     SDL_Init(SDL_INIT_VIDEO);
     
-    *wind = SDL_CreateWindow("Particle demo (Snow)",
-                             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                             SCREEN_WIDTH, SCREEN_HEIGHT,
-                             SDL_WINDOW_SHOWN);
-    *rend = SDL_CreateRenderer(*wind, -1, 0);
+    *window = SDL_CreateWindow("Particle demo (Snow)",
+                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                               SCREEN_WIDTH, SCREEN_HEIGHT,
+                               SDL_WINDOW_SHOWN);
+    *rend = SDL_CreateRenderer(*window, -1, 0);
 }
 
 Flake* initFlakes()
@@ -94,9 +94,9 @@ void render(SDL_Renderer* renderer, Flake* flakes, unsigned int elapsed) {
     
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
-    for (int i = 0; i < NUM_FLAKES; i++)
+    for (int flakeid = 0; flakeid < NUM_FLAKES; flakeid++)
     {
-        flake = &flakes[i];
+        flake = &flakes[flakeid];
         
         flutter = cos(flake->flutterOffset + (flake->flutterRate * elapsed)) * flake->flutterRad;
         // SCREEN_HEIGHT is not a typo. VIEWPORT_WIDTH * SCREEN_HEIGHT == SCREEN_WIDTH.
