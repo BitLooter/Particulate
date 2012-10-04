@@ -26,14 +26,14 @@ const float MAX_FLUTTER_MAG = 0.035;
 /* Structs
  **********/
 typedef struct _Flake {
-    double xOffset;         // X/Y offsets used to determine final screen location -
-    double yOffset;         //  otherwise they'd all be on top of each other
-    double gravity;         // Amount the snowflake falls in one millisecond
-    double wind;            // Like gravity, but for horizontal movement. May be negative.
-    double flutterRate;     // Rate at which the flake oscillates
-    double flutterOffset;   // Each flake's flutter starts at a different point else it looks like a damn snow disco
-    double flutterRad;      // Amount the flake drifts to each side (flutter radius)
-    int    shade;           // Color of the snowflake - use same value for all three colors
+    float xOffset;         // X/Y offsets used to determine final screen location -
+    float yOffset;         //  otherwise they'd all be on top of each other
+    float gravity;         // Amount the snowflake falls in one millisecond
+    float wind;            // Like gravity, but for horizontal movement. May be negative.
+    float flutterRate;     // Rate at which the flake oscillates
+    float flutterOffset;   // Each flake's flutter starts at a different point else it looks like a damn snow disco
+    float flutterRad;      // Amount the flake drifts to each side (flutter radius)
+    int   shade;           // Color of the snowflake - use same value for all three colors
 } Flake;
 
 
@@ -57,28 +57,28 @@ int init(SDL_Window** wind, SDL_Renderer** rend)
 
 Flake* initFlakes()
 {
-    double timeToFall;
-    double windRatio;
-    double flutterAmount;
-    double flutterMag;
+    float  timeToFall;
+    float  windRatio;
+    float  flutterAmount;
+    float  flutterMag;
     Flake* flakes;
-    int i;
+    int    i;
     Flake *flake;
     
     flakes = calloc(NUM_FLAKES, sizeof(Flake));
     
     for (i = 0, flake=flakes; i < NUM_FLAKES; i++, flake++)
     {
-        timeToFall = MIN_TIME_TO_FALL  + (((double) rand() / RAND_MAX) * (MAX_TIME_TO_FALL - MIN_TIME_TO_FALL));
-        windRatio = MIN_WIND_RATIO + (((double) rand() / RAND_MAX) * (MAX_WIND_RATIO - MIN_WIND_RATIO));
-        flutterAmount = MIN_FLUTTER_RATE + (((double) rand() / RAND_MAX) * (MAX_FLUTTER_RATE - MIN_FLUTTER_RATE));
-        flutterMag = MIN_FLUTTER_MAG + (((double) rand() / RAND_MAX) * (MAX_FLUTTER_MAG - MIN_FLUTTER_MAG));
-        flake->xOffset = ((double) rand() / RAND_MAX) * VIEWPORT_WIDTH;
-        flake->yOffset = (double) rand() / RAND_MAX;
+        timeToFall = MIN_TIME_TO_FALL  + (((float) rand() / RAND_MAX) * (MAX_TIME_TO_FALL - MIN_TIME_TO_FALL));
+        windRatio = MIN_WIND_RATIO + (((float) rand() / RAND_MAX) * (MAX_WIND_RATIO - MIN_WIND_RATIO));
+        flutterAmount = MIN_FLUTTER_RATE + (((float) rand() / RAND_MAX) * (MAX_FLUTTER_RATE - MIN_FLUTTER_RATE));
+        flutterMag = MIN_FLUTTER_MAG + (((float) rand() / RAND_MAX) * (MAX_FLUTTER_MAG - MIN_FLUTTER_MAG));
+        flake->xOffset = ((float) rand() / RAND_MAX) * VIEWPORT_WIDTH;
+        flake->yOffset = (float) rand() / RAND_MAX;
         flake->gravity = (VIEWPORT_HEIGHT / (timeToFall * 1000));   // convert seconds to ms
         flake->wind = (flake->gravity * windRatio);
         flake->flutterRate = ((2*PI) / (1000/ flutterAmount));
-        flake->flutterOffset = (2*PI) * ((double) rand() / RAND_MAX);
+        flake->flutterOffset = (2*PI) * ((float) rand() / RAND_MAX);
         flake->flutterRad = flutterMag;
         flake->shade = 255 - (192 * ((timeToFall - MIN_TIME_TO_FALL) / (MAX_TIME_TO_FALL - MIN_TIME_TO_FALL)));
     }
@@ -88,9 +88,9 @@ Flake* initFlakes()
 
 void render(SDL_Renderer* renderer, Flake* flakes, unsigned int elapsed) {
     Flake* flake;
-    int x;
-    int y;
-    double flutter;
+    int    x;
+    int    y;
+    float  flutter;
     
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
