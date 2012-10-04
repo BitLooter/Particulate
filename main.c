@@ -12,15 +12,15 @@ const int   SCREEN_HEIGHT = 480;
 const float VIEWPORT_HEIGHT = 1.0;
 const float PI = 3.14159265358979;
 // Constants controlling particle generation
-const int   NUM_FLAKES = 300;
-const float MIN_TIME_TO_FALL = 4.5;
-const float MAX_TIME_TO_FALL = 5.5;
+const int   NUM_FLAKES = 500;
+const float MIN_TIME_TO_FALL = 3.0;
+const float MAX_TIME_TO_FALL = 4.5;
 const float MIN_WIND_RATIO = 0.1;
-const float MAX_WIND_RATIO = 0.3;
+const float MAX_WIND_RATIO = 0.5;
 const float MIN_FLUTTER_RATE = 0.3;
 const float MAX_FLUTTER_RATE = 0.5;
-const float MIN_FLUTTER_MAG = 0.02;
-const float MAX_FLUTTER_MAG = 0.02;
+const float MIN_FLUTTER_MAG = 0.01;
+const float MAX_FLUTTER_MAG = 0.035;
 
 
 /* Structs
@@ -75,12 +75,12 @@ Flake* initFlakes()
         flutterMag = MIN_FLUTTER_MAG + (((double) rand() / RAND_MAX) * (MAX_FLUTTER_MAG - MIN_FLUTTER_MAG));
         flake->xOffset = ((double) rand() / RAND_MAX) * VIEWPORT_WIDTH;
         flake->yOffset = (double) rand() / RAND_MAX;
-        flake->gravity = (VIEWPORT_HEIGHT / (timeToFall * 1000));
+        flake->gravity = (VIEWPORT_HEIGHT / (timeToFall * 1000));   // convert seconds to ms
         flake->wind = (flake->gravity * windRatio);
         flake->flutterRate = ((2*PI) / (1000/ flutterAmount));
         flake->flutterOffset = (2*PI) * ((double) rand() / RAND_MAX);
         flake->flutterRad = flutterMag;
-        flake->shade = (rand() % 80) + 175;
+        flake->shade = 255 - (192 * ((timeToFall - MIN_TIME_TO_FALL) / (MAX_TIME_TO_FALL - MIN_TIME_TO_FALL)));
     }
     
     return flakes;
